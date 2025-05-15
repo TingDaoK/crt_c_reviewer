@@ -1,0 +1,44 @@
+{
+  "owner": "awslabs",
+  "repo": "aws-c-s3",
+  "pull_number": 517,
+  "body": "I've reviewed the memory pool interface PR with a focus on function and variable naming. Overall, the PR introduces a well-structured interface for buffer pool customization, but I have a few naming suggestions.",
+  "event": "COMMENT",
+  "comments": [
+    {
+      "path": "include/aws/s3/s3_buffer_pool.h",
+      "line": 40,
+      "body": "Consider renaming `can_block` to something more descriptive like `is_high_priority` or `allows_forced_allocation`. The current name doesn't clearly communicate that this is about whether the reservation should proceed even if it exceeds memory limits."
+    },
+    {
+      "path": "include/aws/s3/s3_buffer_pool.h",
+      "line": 52,
+      "body": "The function name `claim` is somewhat ambiguous. A more descriptive name like `get_buffer` or `acquire_buffer` would better indicate its purpose of fetching the associated buffer."
+    },
+    {
+      "path": "include/aws/s3/s3_buffer_pool.h",
+      "line": 96,
+      "body": "Consider renaming `memory_limit` to `total_memory_limit` to be more explicit about what this parameter represents."
+    },
+    {
+      "path": "source/s3_auto_ranged_put.c",
+      "line": 565,
+      "body": "The flag `AWS_S3_REQUEST_FLAG_ALLOCATE_BUFFER_FROM_POOL` might benefit from a more explicit name like `AWS_S3_REQUEST_FLAG_USE_BUFFER_POOL` to better distinguish it from a direct allocation."
+    },
+    {
+      "path": "include/aws/s3/s3_client.h",
+      "line": 200,
+      "body": "In `aws_s3_meta_request_receive_body_extra_info`, consider renaming `ticket` to `buffer_ticket` or `buffer_source` to better indicate its relationship to the buffer."
+    },
+    {
+      "path": "include/aws/s3/s3_client.h",
+      "line": 600,
+      "body": "The function type `aws_s3_buffer_pool_factory_fn` could be more explicitly named as `aws_s3_custom_buffer_pool_factory_fn` to emphasize that it's for creating custom pool implementations."
+    },
+    {
+      "path": "source/s3_meta_request.c",
+      "line": 773,
+      "body": "Consider renaming `illegal_usage_terminate_meta_request` to something more specific like `buffer_allocation_failed` since it's now specifically used to indicate failure to acquire a buffer from the pool."
+    }
+  ]
+}

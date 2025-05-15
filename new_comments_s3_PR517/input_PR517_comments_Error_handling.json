@@ -1,0 +1,7 @@
+{
+  "owner": "awslabs",
+  "repo": "aws-c-s3",
+  "pull_number": 517,
+  "body": "Overall the interface design is clean and I appreciate the well-structured polymorphic approach to allowing custom memory pool implementations. However, I have a few concerns regarding error handling in the async paths.\n\nThe new error code `AWS_ERROR_S3_BUFFER_ALLOCATION_FAILED` is properly defined and used when propagating buffer allocation failures from the async reservation paths, which is good.\n\n**Primary concerns:**\n\n1. There are some inconsistent debug logs in `aws_s3_meta_request_poll_write()` that should be cleaned up (e.g., `AWS_LOGF_DEBUG(0, \"here\")` on line 2468).\n\n2. In `aws_s3_meta_request_poll_write()`, there's a potential resource leak in the error path when `aws_future_s3_buffer_ticket_get_error()` != AWS_OP_SUCCESS. The code sets `illegal_usage_terminate_meta_request = true` but doesn't ensure `buffered_ticket_future` is properly released.\n\n3. In `s_kick_off_prepare_request()`, there's no return value check for the `aws_future_void_then()` call which could lead to unhandled error cases.\n\nPlease review these areas and ensure all async error paths properly clean up resources.",
+  "event": "COMMENT"
+}

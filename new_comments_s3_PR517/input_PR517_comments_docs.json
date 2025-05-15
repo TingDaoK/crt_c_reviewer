@@ -1,0 +1,41 @@
+{
+  "body": "I've reviewed the documentation for the new memory pool interface. Here are some key suggestions to improve documentation clarity for this experimental feature:",
+  "event": "COMMENT",
+  "comments": [
+    {
+      "path": "include/aws/s3/s3_buffer_pool.h",
+      "position": 17,
+      "body": "Could you expand on the warning here about this being an experimental feature? It would help if you explained the specific risks or limitations users should be aware of when implementing custom memory pool behavior."
+    },
+    {
+      "path": "include/aws/s3/s3_buffer_pool.h",
+      "position": 51,
+      "body": "The documentation for `can_block` could be more explicit about what happens when this is set to true vs false, and what the trade-offs are for each approach."
+    },
+    {
+      "path": "include/aws/s3/s3_buffer_pool.h",
+      "position": 62,
+      "body": "For `claim()`, can you clarify what the expected behavior should be if the implementation can't return the same buffer on subsequent calls? Should it return an empty buffer, or is this considered an error case?"
+    },
+    {
+      "path": "include/aws/s3/s3_buffer_pool.h",
+      "position": 135,
+      "body": "The documentation for `aws_s3_buffer_pool_factory_fn` should specify that implementations need to properly set up vtables and reference counting. Perhaps consider adding an example or template implementation to guide users."
+    },
+    {
+      "path": "include/aws/s3/s3_client.h",
+      "position": 601,
+      "body": "Could you clarify whether the callback takes ownership of the `ticket` provided in `aws_s3_meta_request_receive_body_extra_info`, or if it's just a reference that the caller owns? This is important for understanding memory management responsibilities."
+    },
+    {
+      "path": "include/aws/s3/private/s3_default_buffer_pool.h",
+      "position": 1,
+      "body": "This file still uses the header guard `AWS_S3_BUFFER_ALLOCATOR_H` instead of something like `AWS_S3_DEFAULT_BUFFER_POOL_H` which would match its filename."
+    },
+    {
+      "path": "include/aws/s3/private/s3_default_buffer_pool.h",
+      "position": 25,
+      "body": "This documentation appears to be outdated - it refers to `aws_s3_buffer_pool_remove_reservation_hold` which isn't part of the new public interface. Consider updating this section to match the new async/future-based reservation approach."
+    }
+  ]
+}

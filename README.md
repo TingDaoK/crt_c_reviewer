@@ -7,10 +7,30 @@ Github Copliot provides code review functionalities, but it cannot be used.
 
 So, this project is trying to learn from the best code reviewer and try to do some code review jobs using AI agent.
 
+## What is MCP
+
+https://github.com/modelcontextprotocol
+https://modelcontextprotocol.io/introduction
+
+My summarize. The protocol an AI agent can talk with each other. Services can provide their MCP server that let agent know what's the best way to talk with the service. And client can loads MCP server, and knows how to use those services.
+
 ## MCP client used
 
-My fork on fast agent, which uses bedrock claud and fetch your AWS credentials from env, using crt, instead of claud directly. So that we are fully AWS based.
+There is bunch of clients https://modelcontextprotocol.io/clients, includes AmazonQ, and some VScode plugins. I tried couple, and they are somewhat limited and mostly not be able to code.
+
+In the end, I found https://github.com/evalstate/fast-agent, it supports all features and it's open sourced.
+
+So, I fork on fast agent, and uses bedrock claud and fetch your AWS credentials from env, using crt, instead of claud directly. So that we are fully AWS based.
 https://github.com/TingDaoK/fast-agent
+
+## MCP server used
+
+There are couple example server listed by the doc https://modelcontextprotocol.io/examples, and there are more from the communities. In this project, I used:
+
+1. It uses MCP server `@modelcontextprotocol/server-filesystem` to access file system, https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem
+2. Uses `@modelcontextprotocol/server-github` to performance github related access and action, https://github.com/modelcontextprotocol/servers/tree/main/src/github
+3. Use `awslabs.bedrock-kb-retrieval-mcp-server@latest` to retrieve from bedrock knowledge base, https://awslabs.github.io/mcp/servers/bedrock-kb-retrieval-mcp-server/
+4. `aws_mcp_server` to use aws-cli, https://github.com/alexei-led/aws-mcp-server
 
 ## How to run it
 
@@ -26,13 +46,6 @@ uv pip install -e .
 * Update the `GITHUB_PERSONAL_ACCESS_TOKEN` in fastagent.config.yaml, if you need the agent to post PR reviews for you, you will need to grant it the permission from the token.
 
 * choose the agent to run. There are bunch of hard-coded path to my local env, so, update the path.
-
-## MCP server used
-
-1. It uses MCP server `@modelcontextprotocol/server-filesystem` to access file system
-2. Uses `@modelcontextprotocol/server-github` to performance github related access and action
-3. Use `awslabs.bedrock-kb-retrieval-mcp-server@latest` to retrieve from bedrock knowledge base.
-4. `aws_mcp_server` to use aws-cli
 
 ## Step by Step
 
@@ -79,3 +92,26 @@ The prompt engineering is not easy to get my expected result. The lines are stil
 But, I found the naming and code simplicity are helpful.
 
 * Lastly, if you really want the agent the do the work for you, `review_summarize.py` is able to look into the review files and put them together and submit them on your behave!
+
+## Summarize
+
+### Positive
+
+* It did decent job to grab from github and all the comments as I asked for
+* I also like how it summarize the comments and some of those even dig deep into why those comments are made.
+* I do like the agent's suggestion on naming, catch typos and the code simplicity suggestions. Those suggestions are actually productive! I am no good at naming at all, but AI does give some productive suggestions about naming and documentations. It also does a decent job about code simplicity.
+
+### Negative
+
+* This AI code reviewer is not near our best code reviewer. I tried it on some of our real Pull Request, when the code is complicated, it's hard to catch any bugs.
+* Most of the comments are not very helpful, it takes time to check each of them
+* The line comment about is mostly wrong. So, make the comments hard to follow. I tried, and failed.
+* It takes a long time to process, couple minutes to review the code.
+* The result is not very consistent. Sometimes, it can catch the bug but sometimes not with the same code and same prompt.
+
+### In the end
+
+The MCP is very powerful! Service can add their knowledge to let AI handles the job more efficiently. Will it even be a replacement of SDK? Maybe, if everyone starts to use AI to interact with services, maybe most of the SDK models are not needed anymore. But, it's still in a very early stage.
+
+How much it can help to review the code? I think it's still very minimal, but a good start. I do find things that are productive. And with more prompt engineering, I think it can get better.
+The model doesn't enable thinking for now, with thinking, it maybe more productive?
