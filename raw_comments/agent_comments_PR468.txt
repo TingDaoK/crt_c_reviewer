@@ -1,0 +1,14 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/468
+PR Title: Support full object checksum
+Reviewer: graebm
+
+Comments:
+1. Review comment: "LGTM (previously reviewed in private repo)"
+   Review state: APPROVED
+   Submitted at: 2024-12-05T23:30:51Z
+
+Context:
+This PR was adding support for using crc64nvme as S3 checksum and support for full object checksums. 
+According to the PR description, it was previously reviewed in private repositories:
+- aws-c-s3-staging PR #34
+- aws-c-s3-staging PR #29

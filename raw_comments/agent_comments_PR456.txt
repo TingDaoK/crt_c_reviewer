@@ -1,0 +1,45 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/456
+PR Title: Validate Invalid Network Interface Names at Client Initialization 
+Reviewer: graebm
+
+Comments:
+1. On file: source/s3_client.c
+   Comment: "trying to clean up behind yourself is hard in C
+   which is why we prefer the \"goto error, cleanup everything\" pattern,
+   and why our cleanup/destroy functions are the only ones that tolerate unexpected NULL args
+   
+   This function already has 2 different \"goto error\" labels.
+   Now 1 of those labels you have to be careful to also cleanup a specific variable before you goto it. this is too fragile 😓
+   
+   Seems better to completely remove the `on_early_fail` label from this function, and just always try to cleanup everything via `goto on_error`?
+   
+   Another option: instead of the `on_error:` label sharing 90% the same cleanup code as `s_s3_client_finish_destroy_default()`, have them share code, and tolerate destroying a half-assembled client"
+   
+   Created at: 2024-10-15T21:00:02Z
+
+2. On file: source/s3_client.c
+   Comment: "do we still need to move any of this code around? Can we keep it where it was, and change ~goto on_early_fail~ -> `goto on_error` and call it a day?"
+   Created at: 2024-10-15T21:50:27Z
+
+3. On file: source/s3_client.c
+   Comment: "nice job shuffling around these log statements and if-checks
+   makes more sense now
+   👍"
+   Created at: 2024-10-15T21:45:59Z
+
+4. First review comment: ""
+   Review state: COMMENTED
+   Submitted at: 2024-10-15T21:05:32Z
+
+5. Second review comment: ""
+   Review state: COMMENTED
+   Submitted at: 2024-10-15T21:50:32Z
+
+6. Final review comment: ""
+   Review state: APPROVED
+   Submitted at: 2024-10-15T23:13:54Z
+
+Context:
+This PR was adding validation for network interface names at client initialization time to catch typos early, rather than having them fail due to timeout when making a request. 
+
+The main feedback from graebm focused on error handling and cleanup in the client code, suggesting a more robust approach to error handling by consolidating error paths and ensuring proper cleanup through consistent use of goto labels.

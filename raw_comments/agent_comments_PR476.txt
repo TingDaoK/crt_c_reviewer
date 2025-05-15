@@ -1,0 +1,28 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/476
+PR Title: 4 New EC2 Instances with Recommended Configuration
+Reviewer: graebm
+
+Comments:
+1. On file: source/s3_platform_info.c (Line 45)
+   Comment: "what's with having both `_` and `.` ?"
+   Created at: 2024-12-12T19:12:23Z
+   
+2. On file: source/s3_platform_info.c (Line 71)
+   Comment: "trivial: why switch from `.` to `_` in these comments? (this repeats again in the End comment)"
+   Created at: 2024-12-12T19:13:36Z
+   
+3. On file: source/s3_platform_info.c (Line 79)
+   Comment: "need to coordinate with python teams on this..."
+   Created at: 2024-12-13T16:28:29Z
+
+4. Review comment: "."
+   Review state: COMMENTED
+   Submitted at: 2024-12-13T16:28:31Z
+
+5. Review:
+   Review state: APPROVED
+   Submitted at: 2024-12-13T17:09:31Z
+
+Response from waahm7 to graebm's comments:
+- "It's a section for the p5 family, so `_` means p5+(e/en etc), and `.` is part of the instance name."
+- "I have gotten rid of `_` since it was confusing and made the sections explicit."

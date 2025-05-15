@@ -1,0 +1,13 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/448
+PR Title: Update MacOS to arm64
+Reviewer: graebm
+
+Comments:
+No comments were made by graebm on this pull request.
+
+Review:
+Review state: APPROVED
+Submitted at: 2024-07-17T22:04:26Z
+
+Context:
+This PR updated the MacOS CI configuration to default to arm64 architecture, added a new macos-x64 CI job, and updated the naming convention from "osx" to "macos" throughout the configuration. This change reflects Apple's transition to ARM-based processors and ensures testing on both architectures.

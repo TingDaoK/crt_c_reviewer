@@ -1,0 +1,12 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/504
+PR Title: add request ID to debug level log
+Reviewer: graebm
+
+Comments:
+1. On file: source/s3_meta_request.c
+   Comment: "trivial: Refer to both of these by either: their full literal header name, or their modeled names ... actually apparently neither of these are in the service model
+   
+   Suggestion:
+   \"id=%p: Request %p finished with error code %d (%s) and response status %d, x-amz-request-id: %s, x-amz-id-2: %s\","
+   
+   Created at: 2025-04-01T21:10:52Z

@@ -1,0 +1,16 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/463
+PR Title: Switch CI to use roles
+Reviewer: graebm
+
+Comments:
+1. On file: .github/workflows/ci.yml
+   Comment: "a few lines up, still using ubuntu-22.04"
+   Created at: 2024-12-02T16:34:38Z
+
+2. Review:
+   Review state: APPROVED
+   Submitted at: 2024-12-02T16:35:27Z
+
+Context:
+This PR was about switching the CI configuration to use roles for authentication instead of direct credentials. 
+Graebm's comment was pointing out an inconsistency in the GitHub workflow file, where one part of the configuration was still using ubuntu-22.04.

@@ -1,0 +1,13 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/445
+PR Title: Make options more const
+Reviewer: graebm
+
+Comments:
+1. Review comment: "I'd advise checking this branch from aws-crt-cpp, and making sure it all works nicely, before merging"
+   Review state: APPROVED
+   Submitted at: 2024-07-10T15:20:22Z
+
+Context:
+This PR made changes to add const qualifiers to pointers in options structures, since the underlying data is always copied and not modified. The exception was reference counted objects, which were left unchanged since reference counting functions don't work well with const pointers.
+
+Graebm approved the changes but suggested verifying compatibility with aws-crt-cpp before merging to ensure there were no unexpected issues with the const qualifiers.

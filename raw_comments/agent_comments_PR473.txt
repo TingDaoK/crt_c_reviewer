@@ -1,0 +1,14 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/473
+PR Title: Add full object checksum callback
+Reviewer: graebm
+
+Comments:
+No comments were made by graebm on this pull request.
+
+Review:
+Review state: APPROVED
+Submitted at: 2024-12-10T22:50:43Z
+
+Context:
+This PR was adding support for providing full object checksum after streaming the data via a callback.
+According to the PR description, it was previously reviewed in a private repository (aws-c-s3-staging, PR #35).

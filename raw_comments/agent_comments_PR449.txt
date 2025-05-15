@@ -1,0 +1,170 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/449
+PR Title: S3 receive filepath
+Reviewer: graebm
+
+Comments:
+1. On file: include/aws/s3/s3.h
+   Comment: "trivial: \"NOT_EXISTS\" isn't correct grammar, maybe `AWS_ERROR_S3_RECV_FILE_NOT_FOUND`?
+   
+   I considered `AWS_ERROR_S3_RECV_FILE_DOES_NOT_EXIST`, but we have a bunch of other \"NOT_FOUND\" errors, so let's stick with that"
+   Created at: 2024-08-20T16:00:57Z
+
+2. On file: include/aws/s3/s3_client.h
+   Comment: "trivial: \"options\" makes it sound like they're bit-flags
+   ```suggestion
+   enum aws_s3_recv_file_option {
+   ```"
+   Created at: 2024-08-20T16:02:08Z
+
+3. On file: include/aws/s3/s3.h
+   Comment: "trivial/debatable: \"file exists\" doesn't sound very error-like. Maybe \"file already exists\"?
+   ```suggestion
+       AWS_ERROR_S3_RECV_FILE_ALREADY_EXISTS,
+   ```"
+   Created at: 2024-08-20T16:05:45Z
+
+4. On file: include/aws/s3/s3_client.h
+   Comment: "trivial: the enum values should share a prefix with the type name. Prefix both with \"aws_s3_recv_file_\", or prefix both with \"aws_recv_file_\".
+   ```suggestion
+       AWS_S3_RECV_FILE_CREATE_OR_REPLACE = 0,
+   ```"
+   Created at: 2024-08-20T16:12:40Z
+
+5. On file: include/aws/s3/s3_client.h
+   Comment: "trivial: inconsistently named variables: \"receive_filepath\" vs \"recv_file_position\". 
+   
+   Do either:
+   ```
+   recv_file_path
+   recv_file_option
+   recv_file_position
+   ```
+   Or
+   ```
+   receive_file_path
+   receive_file_option
+   receive_file_position
+   ```
+   
+   If you choose to spell it out in full as \"receive\", rename the enums and error messages as well"
+   Created at: 2024-08-20T16:15:46Z
+
+6. On file: include/aws/s3/s3_client.h
+   Comment: "trivial: ~options~ -> \"option\""
+   Created at: 2024-08-20T16:16:23Z
+
+7. On file: include/aws/s3/s3_client.h
+   Comment: "document this, that it's only used with WRITE_TO_POSITION"
+   Created at: 2024-08-20T16:17:26Z
+
+8. On file: source/s3_meta_request.c
+   Comment: "```suggestion
+                        \"id=%p Cannot receive file via CREATE_NEW: file already exists\",
+   ```"
+   Created at: 2024-08-20T16:23:40Z
+
+9. On file: source/s3_meta_request.c
+   Comment: "```suggestion
+                        \"id=%p Cannot receive file via WRITE_TO_POSITION: file not found\",
+   ```"
+   Created at: 2024-08-20T16:32:57Z
+
+10. On file: source/s3_meta_request.c
+    Comment: "check that fopen() worked before calling fseek(), so the user see errors about file open failing, instead of errors about fseek() having nullptr passed to it"
+    Created at: 2024-08-20T16:37:37Z
+
+11. On file: source/s3_meta_request.c
+    Comment: "ensure an error is raised, in case a bad enum value gets passed from a language binding, which are seldom built in DEBUG
+    ```suggestion
+                    AWS_ASSERT(false);
+                    aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+                    break;
+    ```"
+    Created at: 2024-08-20T16:38:41Z
+
+12. On file: source/s3.c
+    Comment: "```suggestion
+        AWS_DEFINE_ERROR_INFO_S3(AWS_ERROR_S3_RECV_FILE_ALREADY_EXISTS, \"File already exists, cannot create as new.\"),
+    ```"
+    Created at: 2024-08-20T17:16:39Z
+
+13. On file: include/aws/s3/s3.h
+    Comment: "extremely debatable / not sure: Should we re-use AWS_ERROR_FILE_OPEN_FAILURE here?
+    If so, should we use AWS_ERROR_FILE_OPEN_FAILURE for FILE_ALREADY_EXISTS as well? and add no new error codes?"
+    Created at: 2024-08-20T22:24:27Z
+
+14. On file: source/s3_meta_request.c
+    Comment: "may not need this check. you're calling `fopen()` with `r+` below, and docs say that gives an error if the file doesn't exist https://en.cppreference.com/w/c/io/fopen"
+    Created at: 2024-08-20T22:31:30Z
+
+15. On file: include/aws/s3/s3_client.h
+    Comment: "oh good point, forgot about that 👍"
+    Created at: 2024-08-22T16:40:26Z
+    
+16. On file: include/aws/s3/s3_client.h
+    Comment: "rambling: I'm not thrilled about copying specific behavior from Java's TransferManager V2. There are a lot of edge cases I'd rather just not worry about (e.g. if user sets `delete_on_failure` and `WRITE_TO_POSITION`, and seek fails, do we delete the pre-existing file that we hadn't even altered?)
+    
+    I'd prefer aws-c-s3 do something simple and generic, like let users pass in `int recv_file_fd` or `FILE *recv_file_handle`. Then we can keep the complexity around the Java TransferManager's specific features in the binding (e.g. for [FileWriteOption.WRITE_TO_POSITION](https://github.com/aws/aws-sdk-java-v2/blob/a113c736b14507058f87d88b3d9298af9cee8311/core/sdk-core/src/main/java/software/amazon/awssdk/core/FileTransformerConfiguration.java#L201), let the binding open the file with \"r+\", and seek, then just pass the fd to aws-c-s3 for simple straight-ahead writing.
+    
+    But googling around, it doesn't seem like there's an official way to get the `int fd` from Java. It's a [private field in FileDescriptor](https://github.com/corretto/corretto-8/blob/984698e6c4ab8e2d2ab357d41d8ef583081b7a14/jdk/src/solaris/classes/java/io/FileDescriptor.java#L48). So 🤷‍♀️"
+    Created at: 2024-08-22T21:40:29Z
+
+17. On file: source/s3_meta_request.c
+    Comment: "trivial: I was confused by \"ignore the failure\". I was like \"but we ARE paying attention to the failure! It's delete_on_failure, and the operation is failing, so delete!\". Maybe you meant that we're ignoring any errors from aws_file_delete()???
+    ```suggestion
+    ```"
+    Created at: 2024-08-22T21:51:59Z
+
+18. On file: source/s3_meta_request.c
+    Comment: "
+    aws_translate_and_raise_io_error_or() is like aws_raise_error(): it always returns AWS_OP_ERR(-1)
+    ```suggestion
+                            aws_translate_and_raise_io_error_or(errno_value, AWS_ERROR_FILE_WRITE_FAILURE);
+                            error_code = aws_last_error()
+    ```"
+    Created at: 2024-08-22T22:07:02Z
+
+19. On file: source/s3_meta_request.c
+    Comment: "
+    ```suggestion
+                                aws_error_name(error_code));
+    ```"
+    Created at: 2024-08-22T22:08:54Z
+
+20. On file: source/s3_meta_request.c
+    Comment: "I know this isn't part of your PR. But I see 😬 we're not checking aws_checksum_update() for error"
+    Created at: 2024-08-22T22:13:21Z
+
+21. First review comment: ""
+    Review state: COMMENTED
+    Submitted at: 2024-08-20T22:18:37Z
+
+22. Second review comment: ""
+    Review state: COMMENTED
+    Submitted at: 2024-08-20T22:38:16Z
+
+23. Third review comment: ""
+    Review state: COMMENTED
+    Submitted at: 2024-08-22T16:40:26Z
+
+24. Fourth review comment: ""
+    Review state: COMMENTED
+    Submitted at: 2024-08-22T22:14:55Z
+
+25. Fifth review comment: "Fix & ship"
+    Review state: APPROVED
+    Submitted at: 2024-08-22T22:16:24Z
+
+26. Sixth review comment: ""
+    Review state: COMMENTED
+    Submitted at: 2024-08-22T22:22:53Z
+
+Context:
+This PR was adding an API for writing downloaded S3 content directly to a file from CRT, where the write operations would still happen from the same thread, sequentially. The implementation was modeled after Java's TransferManager V2 features for file writing.
+
+Graebm's comments focused on:
+1. Naming consistency and correct grammar in error codes
+2. Error handling and file operation safety
+3. Consistent prefixing for enums and variables
+4. Code organization and documentation suggestions
+5. Potential design concerns about copying Java SDK specific behaviors

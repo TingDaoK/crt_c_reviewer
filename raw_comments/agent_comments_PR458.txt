@@ -1,0 +1,15 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/458
+PR Title: Update CMake to 3.9
+Reviewer: graebm
+
+Comments:
+No comments were made by graebm on this pull request.
+
+Review:
+Review state: APPROVED
+Submitted at: 2024-10-23T00:08:26Z
+
+Context:
+This PR was about updating the CMake minimum required version to 3.9. 
+The PR description references a related pull request in the aws-c-common repository: 
+https://github.com/awslabs/aws-c-common/pull/1159

@@ -1,0 +1,8 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/478
+PR Title: [s3_client]: retry on failed TLS negotiation
+Reviewer: graebm
+
+Comments:
+1. Review comment: "Checked the C++ SDK and Java SDK and they also retry on TLS errors."
+   Review state: APPROVED
+   Submitted at: 2024-12-18T18:03:37Z

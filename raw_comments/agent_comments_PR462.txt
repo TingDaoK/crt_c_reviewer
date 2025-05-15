@@ -1,0 +1,38 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/462
+PR Title: support if-none-match for upload
+Reviewer: graebm
+
+Comments:
+1. On file: .github/workflows/ci.yml
+   Comment: "trivial: this is slightly different than what we have in [aws-crt-java](https://github.com/awslabs/aws-crt-cpp/blob/281a7caff7e10f68a5422d8fca8acf0b48e4215f/.github/workflows/ci.yml#L22) and aws-crt-cpp, which do this:
+   > group: ${{ github.workflow }}-${{ github.ref }}
+   
+   which I got from these docs:
+   https://docs.github.com/en/enterprise-cloud@latest/actions/writing-workflows/choosing-what-your-workflow-does/control-the-concurrency-of-workflows-and-jobs"
+   
+   Created at: 2024-11-22T22:45:35Z
+
+2. On file: tests/s3_data_plane_tests.c
+   Comment: "trivial: it's weird to use the `_10MB` and then upload 5MB"
+   Suggestion:
+   ```
+   .object_path_override = g_pre_existing_object_1MB,
+   .object_size_mb = 1,
+   ```
+   Created at: 2024-11-22T22:48:44Z
+
+3. On file: tests/s3_data_plane_tests.c
+   Comment: "trivial: same"
+   Suggestion:
+   ```
+   .object_path_override = g_pre_existing_object_10MB,
+   .object_size_mb = 10,
+   ```
+   Created at: 2024-11-22T22:49:38Z
+
+4. Review comment: "fix & ship"
+   Review state: APPROVED
+   Submitted at: 2024-11-22T22:50:15Z
+
+Context:
+This PR was adding support for the `if-none-match` header for single-part and multipart uploads. S3 now supports conditional writes using this header, and the changes were needed to ensure it was only included in the appropriate operations.

@@ -1,0 +1,22 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/495
+PR Title: Make public bucket optional
+Reviewer: graebm
+
+Comments:
+1. On file: tests/test_helper/test_helper.py
+   Comment: Suggestion for code change:
+   ```
+   if args.create_public_bucket:
+       create_bucket_with_public_object()
+   else:
+       print("Skipping public bucket, run with --create_public_bucket if you need these.")
+   ```
+   Created at: 2025-02-12T23:41:53Z
+
+2. Review comment: "fix & ship"
+   Review state: COMMENTED
+   Submitted at: 2025-02-12T23:42:13Z
+
+3. Approval:
+   Review state: APPROVED
+   Submitted at: 2025-02-12T23:42:21Z

@@ -1,0 +1,14 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/460
+PR Title: Use proper public event loop group API
+Reviewer: graebm
+
+Comments:
+No comments were made by graebm on this pull request.
+
+Review:
+Review state: APPROVED
+Submitted at: 2024-11-11T17:57:45Z
+
+Context:
+This PR was about using the proper public API for event loop groups. 
+The PR was submitted by bretambrose and was approved by graebm without any additional comments.

@@ -1,0 +1,21 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/444
+PR Title: Support machines with multiple NICs 
+Reviewer: graebm
+
+Comments:
+1. On file: include/aws/s3/private/s3_client_impl.h
+   Comment: "trivial: 
+   ```suggestion
+       /* An array of `struct aws_byte_cursor` of network interface names. */
+       const struct aws_byte_cursor *network_interface_names_array;
+   ```"
+   Created at: 2024-07-09T21:30:45Z
+
+2. Review comment: ""
+   Review state: APPROVED
+   Submitted at: 2024-07-09T21:33:44Z
+
+Context:
+This PR implemented support for machines with multiple Network Interface Cards (NICs) by adding an option to provide a list of interface names and distribute connections across these NICs. The change addressed issue #415.
+
+Graebm's only comment was a trivial suggestion to fix a documentation comment by removing an asterisk from the description of the network interface names array type. He approved the PR shortly after making this suggestion.

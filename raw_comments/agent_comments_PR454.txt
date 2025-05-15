@@ -1,0 +1,56 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/454
+PR Title: Support header checksum
+Reviewer: graebm
+
+Comments:
+1. On file: include/aws/s3/s3_client.h
+   Comment: "So, if users already added a checksum header, they ALSO need to set this enum?"
+   Created at: 2024-10-10T15:29:12Z
+
+2. On file: source/s3_request_messages.c
+   Comment: "trivial: I found this if-statement confusing, and the helper function that did different things depending on how it's called, where it's sometimes using local buffers and sometimes using passed-in buffers.
+   ```
+   if adding-checksum-to-trailer:
+       ...
+   else
+       if adding-checksum-to-header OR adding-checksum-to-buffer
+           s_add_checksum_to_header_or_add_checksum_to_buffer()
+   ```
+   do
+   ```
+   if adding-checksum-to-trailer:
+       ...
+   else if adding-checksum-to-header:
+       s_add_checksum_to_header()
+   else if adding-checksum-to-buffer:
+       s_add_checksum_to_buffer()
+   ```"
+   Created at: 2024-10-10T15:58:54Z
+
+3. On file: source/s3_request_messages.c
+   Comment: "if there's an error, we need to cleanup out_checksum"
+   Created at: 2024-10-15T17:35:08Z
+
+4. On file: source/s3_request_messages.c
+   Comment: "if there's an error, we may need to cleanup out_checksum"
+   Created at: 2024-10-15T20:45:02Z
+
+5. First review comment: ""
+   Review state: COMMENTED
+   Submitted at: 2024-10-10T16:01:57Z
+
+6. Second review comment: ""
+   Review state: COMMENTED
+   Submitted at: 2024-10-15T20:45:04Z
+
+7. Final review comment: ""
+   Review state: APPROVED
+   Submitted at: 2024-10-17T16:24:46Z
+
+Context:
+This PR was adding support for providing checksums in the header instead of in the trailer. With this change, the CRT would read the body into memory, calculate the checksum directly from memory, and add it to the request header instead of the trailer.
+
+Graebm's comments focused on:
+1. Clarifying API usage for users who already set checksums
+2. Suggesting clearer code structure for handling different checksum modes
+3. Pointing out memory leak issues where error paths didn't properly clean up resources

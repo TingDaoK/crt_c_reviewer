@@ -1,0 +1,25 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/479
+PR Title: Fix CI for GCC-13 on Ubuntu-18
+Reviewer: graebm
+
+Comments:
+1. On file: .github/workflows/ci.yml
+   Comment: "trivial: undoing needless changes to whitespace"
+   
+   Suggestion:
+   ```
+   - uses: aws-actions/configure-aws-credentials@v4
+     with:
+       role-to-assume: ${{ env.CRT_CI_ROLE }}
+       aws-region: ${{ env.AWS_DEFAULT_REGION }}
+   - name: Build ${{ env.PACKAGE_NAME }}
+     run: |
+       aws s3 cp s3://aws-crt-test-stuff/ci/${{ env.BUILDER_VERSION }}/linux-container-ci.sh ./linux-container-ci.sh && chmod a+x ./linux-container-ci.sh
+       ./linux-container-ci.sh ${{ env.BUILDER_VERSION }} aws-crt-${{ env.LINUX_BASE_IMAGE }} build -p ${{ env.PACKAGE_NAME }} --compiler=${{ matrix.variant.name }} ${{ matrix.variant.extra-build-flag }} --cmake-extra=-DASSERT_LOCK_HELD=ON --cmake-extra=-DAWS_ENABLE_S3_ENDPOINT_RESOLVER=ON
+   ```
+   
+   Created at: 2024-12-18T23:32:14Z
+
+2. Review:
+   Review state: APPROVED
+   Submitted at: 2024-12-18T23:32:28Z

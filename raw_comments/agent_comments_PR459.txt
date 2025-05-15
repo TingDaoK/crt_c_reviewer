@@ -1,0 +1,59 @@
+GitHub Pull Request: https://github.com/awslabs/aws-c-s3/pull/459
+PR Title: Support trailing checksum with no signing
+Reviewer: graebm
+
+Comments:
+1. On file: tests/s3_mock_server_tests.c
+   Comment: "An alternative where the vtable doesn't need to be a public global"
+   
+   Suggestion:
+   ```
+   struct aws_s3_client *client = aws_s3_client_new(allocator, &client_config);
+   ASSERT_NOT_NULL(client);
+   
+   // Patch the vtable
+   struct aws_s3_client_vtable s3_client_get_requests_header_vtable = *client->vtable;
+   s3_client_get_requests_header_vtable.http_connection_make_request = s_get_requests_header_make_request;
+   client->vtable = &s3_client_get_requests_header_vtable;
+   ```
+   
+   Created at: 2024-11-18T21:35:02Z
+
+2. On file: include/aws/s3/private/s3_client_impl.h
+   Comment: "trivial: seems a tiny bit sketchy, making this a public symbol"
+   Created at: 2024-11-18T21:35:37Z
+
+3. On file: source/s3_meta_request.c
+   Comment: Suggestion for comment accuracy:
+   ```
+    * Add "x-amz-content-sha256: STREAMING-UNSIGNED-PAYLOAD-TRAILER" header to support trailing checksum.
+   ```
+   Created at: 2024-11-18T21:38:23Z
+
+4. On file: source/s3_meta_request.c
+   Comment: "is it possible to move this earlier in the function. It's an odd flow, having it after the `finish` goto label, and with the `if (error_code == AWS_ERROR_SUCCESS`"
+   Created at: 2024-11-18T21:41:32Z
+
+5. On file: source/s3_meta_request.c
+   Comment: "nice job shuffling around these log statements and if-checks
+   makes more sense now
+   👍"
+   Created at: 2024-11-18T21:45:59Z
+
+6. On file: source/s3_meta_request.c
+   Comment: "3 things:
+   1) bug: if there's an error here, `error_code` will be -1, but it's *supposed* to be the actual error code
+   2) style: please add an explicit `goto finish` after setting error_code. I know it's not technically necessary because this is currently the last thing that can go wrong, but if some future person inserts more logic after this if-branch, they might miss that this if-branch would need a goto
+   3) utterly trivial: move this so it happens before `signing_duration_ns` gets set, since that seems like the last thing that should happen"
+   Created at: 2024-11-27T00:19:40Z
+
+7. First review comment: ""
+   Review state: COMMENTED
+   Submitted at: 2024-11-18T21:46:10Z
+
+8. Final review comment: "fix & ship"
+   Review state: APPROVED
+   Submitted at: 2024-11-27T00:26:06Z
+
+Context:
+This PR was adding support for trailing checksums in requests that aren't signed. When using a trailing checksum, the "x-amz-content-sha256" header needs to be set to a special value even when not signing the request.
