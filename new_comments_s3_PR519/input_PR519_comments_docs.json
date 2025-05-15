@@ -1,0 +1,25 @@
+{
+  "body": "Thank you for the contribution. I've reviewed the PR and have some suggestions regarding the documentation of the code added.",
+  "comments": [
+    {
+      "path": "tests/s3_data_plane_tests.c",
+      "position": 8119,
+      "body": "The `test_helper` function would benefit from proper documentation explaining its purpose, parameters, and return value ownership. Consider adding a function comment block that describes what this helper does, that it builds an endpoint string for testing, and that the caller is responsible for freeing the returned string with `aws_string_destroy()`."
+    },
+    {
+      "path": "tests/s3_data_plane_tests.c",
+      "position": 8118,
+      "body": "The function name `test_helper` is very generic. Consider renaming it to something more specific like `build_s3_endpoint_for_test` to better reflect its purpose."
+    },
+    {
+      "path": "tests/s3_data_plane_tests.c",
+      "position": 8128,
+      "body": "There appears to be a typo in this variable name: `hsot_name` should likely be `host_name`."
+    },
+    {
+      "path": "tests/s3_data_plane_tests.c",
+      "position": 8121,
+      "body": "This test function would benefit from a descriptive documentation block explaining what functionality is being tested, why the test is needed, and what the expected behavior is. This helps others understand the test's purpose and how to maintain it in the future."
+    }
+  ]
+}

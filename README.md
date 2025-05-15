@@ -1,10 +1,15 @@
 # crt_c_reviewer
 
-an AI reviewer for aws-c code
+an AI reviewer for aws-c code.
+
+The biggest news for aws-common-runtime for this year is @graebm left the team🥲, who is our beloved engineer and best in the world code reviewer.
+Github Copliot provides code review functionalities, but it cannot be used.
+
+So, this project is trying to learn from the best code reviewer and try to do some code review jobs using AI agent.
 
 ## MCP client used
 
-My fork on fast agent, which uses bedrock claud and fetch your AWS credentials from env, using crt instead of claud directly.
+My fork on fast agent, which uses bedrock claud and fetch your AWS credentials from env, using crt, instead of claud directly. So that we are fully AWS based.
 https://github.com/TingDaoK/fast-agent
 
 ## How to run it
@@ -68,3 +73,9 @@ Time to prompt engineering.
         - Error handling!
         - Memory safety!
         - code simplicity!
+
+The prompt engineering is not easy to get my expected result. The lines are still very wrong, I guess somewhere the line information was lost, and GenAI just make things up when I ask for the exactly line.
+
+But, I found the naming and code simplicity are helpful.
+
+* Lastly, if you really want the agent the do the work for you, `review_summarize.py` is able to look into the review files and put them together and submit them on your behave!
