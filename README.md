@@ -41,6 +41,7 @@ There are couple example server listed by the doc https://modelcontextprotocol.i
 git clone https://github.com/TingDaoK/fast-agent.git && cd fast-agent
 uv pip install awscrt
 uv pip install -e .
+uv run reviewer.py
 ```
 
 * Update the `GITHUB_PERSONAL_ACCESS_TOKEN` in fastagent.config.yaml, if you need the agent to post PR reviews for you, you will need to grant it the permission from the token.
