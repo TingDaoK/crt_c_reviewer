@@ -1,0 +1,66 @@
+{
+  "body": "Reviewed the CBOR bindings implementation for code simplicity. The implementation is solid overall but has several areas where complexity can be reduced. Key concerns include inconsistent exception handling, duplicated validation logic, and some missing implementations. See detailed comments on specific lines.",
+  "event": "REQUEST_CHANGES",
+  "comments": [
+    {
+      "path": "awscrt/cbor.py",
+      "line": 70,
+      "body": "**Simplicity issue**: The logic in `write_int` is unnecessarily complex and potentially confusing.\n\nThe variable `val_to_encode` is modified for negative values but then we check the original `val` to decide which branch to take. This creates a disconnect between the transformation and the conditional logic.\n\n```suggestion\ndef write_int(self, val: int):\n    if val >= 0:\n        return _awscrt.cbor_encoder_write_uint(self._binding, val)\n    else:\n        # For negative value, the value to encode is -1 - val.\n        val_to_encode = -1 - val\n        return _awscrt.cbor_encoder_write_negint(self._binding, val_to_encode)\n```\n\nThis makes the logic flow clearer and eliminates the intermediate variable reassignment."
+    },
+    {
+      "path": "awscrt/cbor.py",
+      "line": 108,
+      "body": "**Consistency issue**: This method raises `OverflowError()` for range validation, but `write_map_start()` at line 121 raises `ValueError()` for identical validation logic. \n\nFor better API consistency, both should use the same exception type. `OverflowError` seems more appropriate for numeric range validation."
+    },
+    {
+      "path": "awscrt/cbor.py",
+      "line": 121,
+      "body": "**Consistency issue**: Should raise `OverflowError()` instead of `ValueError()` to match `write_array_start()` validation.\n\nAlso consider extracting the repeated validation logic into a helper method:\n\n```suggestion\ndef _validate_uint64_range(self, value: int, param_name: str):\n    if value < 0 or value > 2**64:\n        raise OverflowError(f\"{param_name} must be between 0 and 2^64\")\n```"
+    },
+    {
+      "path": "awscrt/cbor.py",
+      "line": 131,
+      "body": "**Code duplication**: Same range validation logic appears in `write_array_start()`, `write_map_start()`, and here. Consider extracting to a shared helper method to reduce maintenance overhead."
+    },
+    {
+      "path": "awscrt/cbor.py",
+      "line": 287,
+      "body": "**Potential clarity issue**: The negative slice indexing `self._src[-remaining_length:]` can be confusing, especially when `remaining_length` equals the total source length.\n\nConsider more explicit indexing:\n\n```suggestion\ndef get_remaining_bytes(self) -> bytes:\n    remaining_length = _awscrt.cbor_decoder_get_remaining_bytes_len(self._binding)\n    if remaining_length <= 0:\n        return b''\n    start_idx = len(self._src) - remaining_length\n    return self._src[start_idx:]\n```"
+    },
+    {
+      "path": "awscrt/cbor.py",
+      "line": 351,
+      "body": "**API clarity**: The transformation `return -1 - val` is not immediately obvious to API users. The current docstring doesn't explain why this transformation is needed.\n\n```suggestion\ndef pop_next_negative_int(self) -> int:\n    \"\"\"Return the negative integer value from CBOR negative integer type.\n    \n    Note: CBOR stores negative integers as -(val + 1), so we convert back\n    to the actual negative value by computing -(val + 1) = -1 - val.\n    \"\"\"\n    encoded_val = _awscrt.cbor_decoder_pop_next_negative_int(self._binding)\n    return -1 - encoded_val\n```"
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 46,
+      "body": "**API contract violation**: The TODO comment indicates uncertainty about returning `None` vs empty bytes. However, the Python method signature indicates it returns `bytes`, so returning `None` violates the type contract.\n\n```suggestion\nstruct aws_byte_cursor encoded_data = aws_cbor_encoder_get_encoded_data(encoder);\nreturn PyBytes_FromStringAndSize((const char *)encoded_data.ptr, encoded_data.len);\n```\n\nAlways return bytes, even when empty, to maintain API consistency."
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 67,
+      "body": "**Debuggability concern**: While this macro reduces duplication, it makes debugging difficult and doesn't provide informative error messages.\n\nConsider adding better error context:\n\n```suggestion\n#define S_ENCODER_WRITE_PYOBJECT(ctype, py_conversion, field) \\\n    static PyObject *s_cbor_encoder_write_pyobject_as_##field(struct aws_cbor_encoder *encoder, PyObject *py_object) { \\\n        ctype data = py_conversion(py_object); \\\n        if (PyErr_Occurred()) { \\\n            PyErr_Format(PyExc_TypeError, \"Failed to convert Python object to \" #ctype \" for CBOR \" #field); \\\n            return NULL; \\\n        } \\\n        if (aws_cbor_encoder_write_##field(encoder, data)) { \\\n            return PyErr_AwsLastError(); \\\n        } \\\n        Py_RETURN_NONE; \\\n    }\n```"
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 87,
+      "body": "**Complexity issue**: The `s_cbor_encoder_write_pylong` function handles three different overflow scenarios with complex reference counting. Consider extracting helper functions for each overflow case to improve readability and maintainability.\n\nThe current logic is hard to follow and error-prone for reference counting."
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 140,
+      "body": "**Missing error handling**: The call to `s_cbor_encoder_write_pyobject(encoder, item)` doesn't check the return value. This could result in partial encoding without proper error reporting.\n\n```suggestion\nPyObject *result = s_cbor_encoder_write_pyobject(encoder, item);\nif (!result) {\n    return NULL;  // Error already set by s_cbor_encoder_write_pyobject\n}\nPy_DECREF(result);\n```"
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 160,
+      "body": "**Missing error handling**: Similar to the list encoding, the dictionary encoding calls `s_cbor_encoder_write_pyobject` for both keys and values without checking return values. This could lead to partial encoding on errors."
+    },
+    {
+      "path": "awscrt/cbor.py",
+      "line": 294,
+      "body": "**Missing implementation**: The `reset_src` method is defined in the Python API but I don't see the corresponding C binding `aws_py_cbor_decoder_reset_src` implemented in `source/cbor.c` or registered in `source/module.c`. This will cause runtime errors when users call this method.\n\nThe C implementation needs to handle updating both the native decoder source and the Python-side `self._src` reference."
+    }
+  ]
+}

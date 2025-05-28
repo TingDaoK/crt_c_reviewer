@@ -4,7 +4,7 @@ from mcp_agent.core.fastagent import FastAgent
 # Create the application
 fast = FastAgent("bragme")
 
-knowledge_base_id = "8BRIG4RFWU"
+knowledge_base_id = "HKNW5BLFRA"
 profile = "bedrock"
 region = "us-east-1"
 
@@ -19,7 +19,7 @@ generic_prompt = f"You are a helpful AI Agent. Use {knowledge_base_id} as Knowle
 def specific_prompt(specific):
     return f"{generic_prompt} \
         and make your comments as details as you can for each specific lines only about the {specific} on the pull request, \
-            save your comments about the specific line or lines with the exact number of the lines of the new code to a folder naming followed by ./new_comments_c_s3_PR<the PR number> with name related to the Pull request like PR454_Comments_{specific}.md. \
+            save your comments about the specific line or lines with the exact number of the lines of the new code to a folder naming followed by ./new_comments_crt_python_PR<the PR number> with name related to the Pull request like PR454_Comments_{specific}.md. \
                 And then, generates the comments only if needed and keep the positive comments out for the specific line or lines as the input for create_pull_request_review, \
                     save it to a file to the same folder with naming like `input_PR454_comments_{specific}.json`, but don't really submit the comments"
 

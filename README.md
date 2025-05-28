@@ -30,7 +30,7 @@ There are couple example server listed by the doc https://modelcontextprotocol.i
 1. It uses MCP server `@modelcontextprotocol/server-filesystem` to access file system, https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem
 2. Uses `@modelcontextprotocol/server-github` to performance github related access and action, https://github.com/modelcontextprotocol/servers/tree/main/src/github
 3. Use `awslabs.bedrock-kb-retrieval-mcp-server@latest` to retrieve from bedrock knowledge base, https://awslabs.github.io/mcp/servers/bedrock-kb-retrieval-mcp-server/
-4. `aws_mcp_server` to use aws-cli, https://github.com/alexei-led/aws-mcp-server
+4. `aws_mcp_server` to use aws-cli, https://github.com/alexei-led/aws-mcp-server, python3.13+ required.
 
 ## How to run it
 
@@ -41,6 +41,8 @@ There are couple example server listed by the doc https://modelcontextprotocol.i
 git clone https://github.com/TingDaoK/fast-agent.git && cd fast-agent
 uv pip install awscrt
 uv pip install -e .
+cd ..
+git clone https://github.com/TingDaoK/crt_c_reviewer.git && cd crt_c_reviewer
 uv run reviewer.py
 ```
 

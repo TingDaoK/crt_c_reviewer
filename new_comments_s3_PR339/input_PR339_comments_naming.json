@@ -1,0 +1,7 @@
+{
+  "owner": "awslabs",
+  "repo": "aws-crt-swift",
+  "pull_number": 339,
+  "body": "I've reviewed the changes from a function and variable naming perspective, and everything looks good. The PR primarily changes the formatting style from SwiftLint to Swift-Format, resulting in more consistent indentation (2 spaces instead of 4) and spacing throughout the codebase.\n\nThe formatting changes have actually improved readability of the existing function and variable names by providing better visual alignment, especially for complex function signatures with multiple parameters. No naming-related issues were found.\n\nNice work transitioning to Swift-Format while maintaining (and even improving) code readability!",
+  "event": "APPROVE"
+}

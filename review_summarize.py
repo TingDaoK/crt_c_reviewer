@@ -7,7 +7,7 @@ fast = FastAgent("bragme")
 
 @fast.agent(
     "review_submitter",
-    "Given a github pull request, read the input_*_comments*.json from the new_comments_s3_* folder related to the PR and combine them to a single file.\
+    "Given a github pull request, read the input_*_comments*.json from the new_comments_* folder related to the PR and combine them to a single file.\
         Summary the repeated comments.\
         Check the merged comments, and makes sure the lines commented on are valid. Fix it if not. \
         Save the merged comments to the same folder.\

@@ -1,0 +1,92 @@
+[
+  {
+    "path": "awscrt/cbor.py",
+    "line": 12,
+    "body": "**debatable**: The enum could benefit from more comprehensive documentation. Consider adding RFC 8949 section references and explaining the relationship between enum values and CBOR major types. For example:\n\n```python\nclass AwsCborType(IntEnum):\n    \"\"\"CBOR data type enumeration corresponding to RFC 8949 major types.\n    \n    Each value represents a specific CBOR data item type as defined in\n    RFC 8949 section 3. The values correspond to `enum aws_cbor_type` \n    in aws/common/cbor.h.\n    \"\"\"\n    # Major type 0: Unsigned integers\n    UnsignedInt = 1\n    # Major type 1: Negative integers  \n    NegativeInt = 2\n    # ... etc\n```"
+  },
+  {
+    "path": "awscrt/cbor.py", 
+    "line": 30,
+    "body": "**important**: The class docstring should include thread safety information and memory management details. AWS CRT components typically need explicit thread safety documentation. Consider adding:\n\n```python\nclass AwsCborEncoder(NativeResource):\n    \"\"\"CBOR encoder for converting Python objects to CBOR binary format.\n    \n    Thread Safety:\n        This class is NOT thread-safe. Each encoder instance should only be \n        used from a single thread.\n        \n    Memory Management:\n        Integrates with AWS CRT memory management. Call reset() to clear \n        buffers for reuse.\n    \"\"\"\n```"
+  },
+  {
+    "path": "awscrt/cbor.py",
+    "line": 47,
+    "body": "**important**: Documentation inconsistency - the docstring says it returns \"The encoded data currently\" but doesn't specify the behavior when no data has been encoded. The C implementation at line 45 in cbor.c returns `None` for empty data, but this should return empty bytes for consistency with Python conventions."
+  },
+  {
+    "path": "awscrt/cbor.py",
+    "line": 57,
+    "body": "**important**: The integer encoding documentation needs clarification. The comment \"val less than -2^64 will be encoded as Negative bignum\" is misleading since the implementation doesn't actually support bignums yet (see OverflowError handling in C code). Consider:\n\n```python\ndef write_int(self, val: int):\n    \"\"\"Write an integer in CBOR format.\n    \n    Encoding rules:\n    - Non-negative integers (0 to 2^64-1): CBOR unsigned integer (major type 0)\n    - Negative integers (-1 to -2^64): CBOR negative integer (major type 1) \n    - Integers outside 64-bit range: Currently raise OverflowError\n    \n    Note: CBOR bignum support (RFC 8949 tags 2 and 3) is not yet implemented.\n    \"\"\"\n```"
+  },
+  {
+    "path": "awscrt/cbor.py",
+    "line": 78,
+    "body": "**trivial**: The docstring mentions \"If the val can be convert to int\" but this is unclear. The C implementation doesn't actually convert floats to integers. Consider clarifying: \"Encodes as the most compact CBOR floating-point representation without loss of precision.\""
+  },
+  {
+    "path": "awscrt/cbor.py",
+    "line": 95,
+    "body": "**important**: Inconsistent validation logic. This method checks `number_entries > 2**64` and raises `OverflowError()`, but `write_map_start()` at line 114 checks the same condition and raises `ValueError()`. These should use consistent exception types for the same error condition."
+  },
+  {
+    "path": "awscrt/cbor.py",
+    "line": 114,
+    "body": "**important**: Exception type inconsistency with `write_array_start()`. Both methods validate the same range but throw different exception types. Should be `OverflowError` to match array_start behavior and standard Python conventions for numeric overflow."
+  },
+  {
+    "path": "awscrt/cbor.py", 
+    "line": 119,
+    "body": "**debatable**: The tag documentation could be more helpful by mentioning common standardized tags. Consider adding examples:\n\n```python\ndef write_tag(self, tag_number: int):\n    \"\"\"Add a CBOR semantic tag.\n    \n    Common tags include:\n    - 0: Standard date/time string (RFC 3339)\n    - 1: Epoch-based date/time (Unix timestamp)\n    - 2: Positive bignum, 3: Negative bignum\n    \n    Args:\n        tag_number: Tag number per RFC 8949 section 3.4\n    \"\"\"\n```"
+  },
+  {
+    "path": "awscrt/cbor.py",
+    "line": 169,
+    "body": "**trivial**: Good semantic helper method. Consider documenting that this is equivalent to `write_tag(1)` followed by `write_float(val)` for users who want to understand the underlying CBOR structure."
+  },
+  {
+    "path": "awscrt/cbor.py",
+    "line": 215,
+    "body": "**important**: The `write_data_item` method documentation should clearly specify which Python types are supported and what exceptions can be raised. This is a key API that users will rely on heavily. Consider documenting the complete type mapping and error conditions."
+  },
+  {
+    "path": "awscrt/cbor.py",
+    "line": 257,
+    "body": "**important**: Type annotation error in the docstring. The parameter is documented as `Callable[[int, Any], Any]` but should be `Callable[[Union[int, float]], Any]` to match the actual signature and the description that mentions both int and float."
+  },
+  {
+    "path": "awscrt/cbor.py",
+    "line": 298,
+    "body": "**important**: Potential bug in the slice calculation. Using `self._src[-remaining_length:]` assumes the remaining bytes are at the end, but CBOR decoding consumes from the beginning. This should likely be based on the current position, not slicing from the end. This could return incorrect data."
+  },
+  {
+    "path": "awscrt/cbor.py",
+    "line": 310,
+    "body": "**trivial**: Excellent documentation with clear examples! This is a good model for documenting complex methods. The CBOR hex breakdown is very helpful for understanding the behavior."
+  },
+  {
+    "path": "awscrt/cbor.py",
+    "line": 421,
+    "body": "**debatable**: The indefinite-length array handling documentation is good but could benefit from a complete example showing the recommended pattern for manual indefinite-length processing, similar to the excellent example in `consume_next_single_element`."
+  },
+  {
+    "path": "source/cbor.c",
+    "line": 45,
+    "body": "**important**: TODO comment indicates uncertainty about return behavior. The C code returns `None` for empty data, but the Python documentation suggests it should return empty bytes. This inconsistency should be resolved - either fix the implementation or update the documentation to match actual behavior."
+  },
+  {
+    "path": "source/cbor.c",
+    "line": 133,
+    "body": "**debatable**: The error message \"The integer is too large, BigNumber is not supported yet\" could be more informative. Consider including the actual range limits and perhaps a reference to the RFC 8949 bignum specification for users who need this functionality."
+  },
+  {
+    "path": "source/cbor.c",
+    "line": 261,
+    "body": "**trivial**: Good memory management pattern using the capsule destructor. The comment about encoder lifetime being simple is helpful context."
+  },
+  {
+    "path": "source/cbor.c",
+    "line": 280,
+    "body": "**debatable**: The decoder binding structure and its memory management relationship with the Python object could benefit from more extensive comments explaining the lifetime guarantees and why `self_py` is stored."
+  }
+]

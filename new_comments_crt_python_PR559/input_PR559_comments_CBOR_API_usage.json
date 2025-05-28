@@ -1,0 +1,66 @@
+{
+  "body": "This PR introduces comprehensive CBOR bindings for aws-crt-python, providing both encoder and decoder functionality with proper Python integration. The implementation follows established patterns in the codebase and includes extensive test coverage. Here are my detailed technical comments focusing on API usage and potential improvements.",
+  "event": "COMMENT",
+  "comments": [
+    {
+      "path": "awscrt/cbor.py",
+      "line": 108,
+      "body": "**Important**: Inconsistent exception types across validation methods. `write_array_start()` raises `OverflowError` but `write_map_start()` and `write_tag()` raise `ValueError` for the same type of validation. Consider standardizing on `OverflowError` since it's more semantically appropriate for range validation."
+    },
+    {
+      "path": "awscrt/cbor.py", 
+      "line": 65,
+      "body": "The negative integer encoding logic is correct per RFC 8949, but the flow could be clearer. When `val < 0`, you compute `val_to_encode = -1 - val` but then still check `if val >= 0`. Consider adding a comment explaining why we check the original `val` rather than `val_to_encode` to avoid confusion."
+    },
+    {
+      "path": "awscrt/cbor.py",
+      "line": 242,
+      "body": "Good use of `Union[int, float]` for epoch time callback parameter. The `**kwargs` parameter suggests forward compatibility but isn't documented in the docstring. Consider documenting this parameter or removing it if not needed."
+    },
+    {
+      "path": "awscrt/cbor.py",
+      "line": 254,
+      "body": "Excellent defensive programming - the default behavior of returning the numeric value when no callback is provided is sensible and well-documented."
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 47,
+      "body": "**Debatable**: The TODO comment raises a valid point. Returning empty bytes `b''` instead of `None` would be more consistent with Python conventions. Most Python APIs return empty collections rather than `None` when there's no data."
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 81,
+      "body": "Excellent handling of Python's arbitrary precision integers! The three-case approach (normal range, large negative, large positive) with proper overflow detection is well-implemented. The error message about BigNumber support is clear and informative."
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 372,
+      "body": "**Important**: Critical overflow protection when converting CBOR's 64-bit array size to Python's `Py_ssize_t`. This prevents potential memory corruption with maliciously crafted CBOR data. Good defensive programming."
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 582,
+      "body": "Proper implementation of CBOR tag 1 (epoch time) handling. The type validation and callback mechanism are well-implemented with correct Python reference management using `Py_DECREF`."
+    },
+    {
+      "path": "source/module.c",
+      "line": 121,
+      "body": "Essential utility function that provides overflow protection when converting AWS byte cursors to Python bytes. This follows the defensive programming patterns established throughout the codebase and prevents potential issues with large data."
+    },
+    {
+      "path": "source/module.c",
+      "line": 910,
+      "body": "Complete and systematic registration of all CBOR functions. The naming convention is consistent with existing aws-crt-python patterns (`cbor_encoder_*`, `cbor_decoder_*`) and all functions are properly exposed to Python."
+    },
+    {
+      "path": "test/test_cbor.py",
+      "line": 189,
+      "body": "Comprehensive test data conversion logic that handles all CBOR data types. The use of external JSON test files (`decode-success-tests.json`, `decode-error-tests.json`) is excellent for maintaining comprehensive test coverage across different CBOR constructs."
+    },
+    {
+      "path": "test/test_cbor.py",
+      "line": 157,
+      "body": "Proper implementation of IEEE 754 bit pattern conversion for float testing. This ensures floating-point values are compared correctly at the bit level, which is important for CBOR compliance testing."
+    }
+  ]
+}

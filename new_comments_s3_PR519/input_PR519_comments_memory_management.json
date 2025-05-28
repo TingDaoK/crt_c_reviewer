@@ -1,20 +1,21 @@
 {
-  "body": "I've reviewed the changes with a focus on memory management. Please see the comments below.",
+  "body": "## Memory Management Review\n\nI've reviewed this PR focusing on memory management and found several important issues that need to be addressed:\n\n**Critical Memory Leak:** The allocated string from `test_helper()` is never freed, creating a memory leak. Please see specific line comments below.\n\n**Additional Issues:** Variable name typo and missing error handling for potential NULL return.",
+  "event": "REQUEST_CHANGES",
   "comments": [
     {
       "path": "tests/s3_data_plane_tests.c",
-      "position": 8118,
-      "body": "Important: This helper function allocates memory for the `aws_string` but doesn't free it. Make sure the caller takes responsibility for freeing this memory using `aws_string_destroy()`."
+      "line": 8121,
+      "body": "**blocking:** Memory ownership issue - This helper function allocates an `aws_string` but doesn't clearly document ownership transfer. The returned string must be freed by the caller, but this creates potential for memory leaks.\n\n**Recommendation:** Add documentation about ownership or consider renaming to make ownership clear (e.g., `test_helper_create_hostname`)."
+    },
+    {
+      "path": "tests/s3_data_plane_tests.c", 
+      "line": 8142,
+      "body": "**blocking:** Memory leak - The string allocated by `test_helper()` is never freed. Also, there's a typo: `hsot_name` should be `host_name`.\n\n**Fix required:** Add `aws_string_destroy(host_name);` after line 8145 and before the cleanup section. Also fix the variable name typo."
     },
     {
       "path": "tests/s3_data_plane_tests.c",
-      "position": 8137,
-      "body": "There appears to be a typo in the variable name \"hsot_name\". This should be \"host_name\" for better code clarity and consistency."
-    },
-    {
-      "path": "tests/s3_data_plane_tests.c",
-      "position": 8158,
-      "body": "Important: Memory leak. The string allocated by `test_helper()` is never destroyed. Please add `aws_string_destroy(hsot_name);` before returning from this function to properly clean up the allocated memory."
+      "line": 8142,
+      "body": "**important:** Missing error handling - Should check if `test_helper()` returns NULL (allocation failure) to prevent potential NULL pointer dereference when creating the byte cursor on line 8145."
     }
   ]
 }

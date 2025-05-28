@@ -1,0 +1,71 @@
+{
+  "body": "## Error Handling Review Summary\n\nThis PR introduces CBOR bindings with several error handling issues that need to be addressed. The main concerns are:\n\n1. **Critical**: Use of `AWS_ASSERT` instead of proper error handling in memory allocation\n2. **Important**: Missing error propagation checks in recursive operations\n3. **Important**: Inconsistent exception types for similar validation logic\n4. **Moderate**: Memory cleanup improvements needed\n\nPlease see individual line comments for detailed feedback.",
+  "event": "REQUEST_CHANGES",
+  "comments": [
+    {
+      "path": "source/cbor.c",
+      "line": 32,
+      "body": "**blocking:** Using `AWS_ASSERT(encoder != NULL)` is problematic because:\n\n1. It will crash the program if allocation fails in release builds\n2. It doesn't provide a proper Python exception to the caller\n\nReplace with proper null check:\n```c\nif (!encoder) {\n    PyErr_SetString(PyExc_MemoryError, \"Failed to allocate CBOR encoder\");\n    return NULL;\n}\n```\n\nThis follows the error handling patterns established in other parts of the aws-crt-python codebase."
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 50,
+      "body": "**debatable:** Returning `None` for empty encoded data is inconsistent with Python conventions. Empty bytes should return `b''` instead of `None`.\n\nConsider changing to:\n```c\nreturn PyBytes_FromStringAndSize(\"\", 0);\n```\n\nThis would be more consistent with how other Python byte operations work."
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 104,
+      "body": "**important:** After `PyErr_Occurred()` check, the function should return immediately to avoid undefined behavior. The current code continues execution which could lead to using an invalid `val_to_encode` value.\n\nMove the return statement inside the error check:\n```c\nif (PyErr_Occurred()) {\n    PyErr_SetString(PyExc_OverflowError, \"The integer is too large, BigNumber is not supported yet.\");\n    return NULL;\n}\n```"
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 154,
+      "body": "**blocking:** Missing error check for `s_cbor_encoder_write_pyobject()` call. This function can fail and return `NULL`, but the return value is not checked.\n\nAdd error handling:\n```c\nPyObject *result = s_cbor_encoder_write_pyobject(encoder, item);\nif (!result) {\n    return NULL;\n}\nPy_DECREF(result);\n```\n\nThis ensures that encoding errors are properly propagated up the call stack."
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 277,
+      "body": "**blocking:** Same issue as with encoder - using `AWS_ASSERT(binding->native != NULL)` instead of proper error handling.\n\nReplace with:\n```c\nif (!binding->native) {\n    aws_mem_release(aws_py_get_allocator(), binding);\n    PyErr_SetString(PyExc_MemoryError, \"Failed to allocate CBOR decoder\");\n    return NULL;\n}\n```\n\nAlso need to add null check for `binding` allocation itself:\n```c\nstruct decoder_binding *binding = aws_mem_calloc(aws_py_get_allocator(), 1, sizeof(struct decoder_binding));\nif (!binding) {\n    PyErr_SetString(PyExc_MemoryError, \"Failed to allocate decoder binding\");\n    return NULL;\n}\n```"
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 166,
+      "body": "**important:** The error handling logic for indefinite arrays could be improved. Consider adding validation for the loop bounds and ensuring proper cleanup of partial arrays on error.\n\nAlso, the `goto error` pattern is good, but ensure all error paths are properly tested."
+    },
+    {
+      "path": "awscrt/cbor.py",
+      "line": 113,
+      "body": "**important:** Inconsistent exception types. `write_array_start()` raises `OverflowError()` but `write_map_start()` raises `ValueError()` for the same validation logic.\n\nBoth should raise `OverflowError()` since the issue is with the size of the number, not the value itself:\n```python\nif number_entries < 0 or number_entries > 2**64:\n    raise OverflowError(\"Number of entries out of valid range\")\n```"
+    },
+    {
+      "path": "awscrt/cbor.py",
+      "line": 127,
+      "body": "**important:** Same inconsistency as above - should raise `OverflowError()` instead of `ValueError()` for consistency with `write_array_start()`."
+    },
+    {
+      "path": "awscrt/cbor.py",
+      "line": 278,
+      "body": "**moderate:** Potential issue with slice operation. If `remaining_length` is corrupted or exceeds `len(self._src)`, this could raise an unexpected exception.\n\nConsider adding bounds checking:\n```python\nif remaining_length > len(self._src):\n    remaining_length = len(self._src)\nreturn self._src[-remaining_length:] if remaining_length > 0 else b''\n```"
+    },
+    {
+      "path": "source/cbor.c",
+      "line": 162,
+      "body": "**moderate:** In the dictionary decoding logic, the error cleanup could be more robust. The current `goto error` approach is good, but consider whether partial dictionaries should be cleaned up differently.\n\nEnsure that both `key` and `value` are properly decremented in all error paths."
+    },
+    {
+      "path": "test/test_cbor.py",
+      "line": 15,
+      "body": "**moderate:** The test for invalid input (passing float to `write_int()`) is good, but consider adding more comprehensive error handling tests:\n\n1. Test memory allocation failures (if possible to simulate)\n2. Test malformed CBOR data decoding\n3. Test boundary conditions (very large numbers, empty inputs)\n4. Test cleanup behavior when exceptions occur mid-operation\n\nThis would help ensure the error handling paths are properly exercised."
+    },
+    {
+      "path": "test/test_cbor.py",
+      "line": 245,
+      "body": "**important:** In the error test cases, you're catching generic `RuntimeError`, but the actual errors might be more specific. Consider checking for the specific exception types that should be raised:\n\n```python\nwith self.assertRaises((RuntimeError, ValueError, OverflowError)) as context:\n    # test code\n# Optionally check the specific error message\nself.assertIn('expected error text', str(context.exception))\n```\n\nThis provides better validation of the error handling behavior."
+    },
+    {
+      "path": "source/module.c",
+      "line": 118,
+      "body": "**moderate:** The new `PyBytes_FromAwsByteCursor` function should include proper bounds checking:\n\n```c\nPyObject *PyBytes_FromAwsByteCursor(const struct aws_byte_cursor *cursor) {\n    if (!cursor || !cursor->ptr) {\n        PyErr_SetString(PyExc_ValueError, \"Invalid cursor\");\n        return NULL;\n    }\n    if (cursor->len > PY_SSIZE_T_MAX) {\n        PyErr_SetString(PyExc_OverflowError, \"Cursor exceeds PY_SSIZE_T_MAX\");\n        return NULL;\n    }\n    return PyBytes_FromStringAndSize((const char *)cursor->ptr, (Py_ssize_t)cursor->len);\n}\n```\n\nThe current implementation only checks the size but not the pointer validity."
+    }
+  ]
+}

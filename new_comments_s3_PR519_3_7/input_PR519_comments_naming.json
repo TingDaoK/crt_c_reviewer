@@ -1,0 +1,36 @@
+{
+  "body": "I've reviewed the naming conventions in your PR. Please see the comments below for suggested improvements to follow the AWS C SDK coding standards.",
+  "event": "COMMENT",
+  "comments": [
+    {
+      "path": "tests/s3_data_plane_tests.c",
+      "position": 8118,
+      "body": "Function naming issue: In this codebase, helper functions should be prefixed with `s_` to indicate they are static functions with local file scope. Please rename `test_helper` to `s_test_helper`."
+    },
+    {
+      "path": "tests/s3_data_plane_tests.c",
+      "position": 8123,
+      "body": "Function naming issue: The function `aws_test_s3_default_get` should follow the AWS C SDK naming convention where test functions are prefixed with `s_test_`. The AWS_TEST_CASE macro already defines this relationship, but the function implementation should match."
+    },
+    {
+      "path": "tests/s3_data_plane_tests.c",
+      "position": 8139,
+      "body": "Variable naming issue: There's a typo in the variable name `hsot_name` which should be `host_name` for clarity and consistency with other similar variables in the codebase."
+    },
+    {
+      "path": "tests/s3_data_plane_tests.c",
+      "position": 8142,
+      "body": "Variable naming issue: For consistency, use `aws_byte_cursor_from_string(host_name)` instead of the misspelled variable."
+    },
+    {
+      "path": "tests/s3_data_plane_tests.c",
+      "position": 8118,
+      "body": "This helper function seems unnecessary as it only wraps a single function call. Consider inlining this at the usage site rather than creating a separate function just for this simple operation."
+    },
+    {
+      "path": "tests/s3_data_plane_tests.c",
+      "position": 8123,
+      "body": "This test appears to be very similar to the existing `s_test_s3_default_get_without_content_length` test. Consider refactoring to make the intention and differences clearer, or remove if it's actually a duplicate."
+    }
+  ]
+}
